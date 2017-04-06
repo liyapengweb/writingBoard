@@ -1,0 +1,80 @@
+cation history begins.
+### Note, this is unrelated to svn log.
+### Very large values rarely provide significant additional savings but
+### can impact performance greatly - in particular if directory
+### deltification has been activated.  Very small values may be useful in
+### repositories that are dominated by large, changing binaries.
+### Should be a power of two minus 1.  A value of 0 will effectively
+### disable deltification.
+### For 1.8, the default value is 1023; earlier versions have no limit.
+# max-deltification-walk = 1023
+###
+### The skip-delta scheme used by FSFS tends to repeatably store redundant
+### delta information where a simple delta against the latest version is
+### often smaller.  By default, 1.8+ will therefore use skip deltas only
+### after the linear chain of deltas has grown beyond the threshold
+### specified by this setting.
+### Values up to 64 can result in some reduction in repository size for
+### the cost of quickly increasing I/O and CPU costs. Similarly, smaller
+### numbers can reduce those costs at the cost of more disk space.  For
+### rarely read repositories or those containing larger binaries, this may
+### present a better trade-off.
+### Should be a power of two.  A value of 1 or smaller will cause the
+### exclusive use of skip-deltas (as in pre-1.8).
+### For 1.8, the default value is 16; earlier versions use 1.
+# max-linear-deltification = 16
+###
+### After deltification, we compress the data through zlib to minimize on-
+### disk size.  That can be an expensive and ineffective process.  This
+### setting controls the usage of zlib in future revisions.
+### Revisions with highly compressible data in them may shrink in size
+### if the setting is increased but may take much longer to commit.  The
+### time taken to uncompress that data again is widely independent of the
+### compression level.
+### Compression will be ineffective if the incoming content is already
+### highly compressed.  In that case, disabling the compression entirely
+### will speed up commits as well as reading the data.  Repositories with
+### many small compressible files (source code) but also a high percentage
+### of large incompressible ones (artwork) may benefit from compression
+### levels lowered to e.g. 1.
+### Valid values are 0 to 9 with 9 providing the highest compression ratio
+### and 0 disabling it altogether.
+### The default value is 5.
+# compression-level = 5
+
+[packed-revprops]
+### This parameter controls the size (in kBytes) of packed revprop files.
+### Revprops of consecutive revisions will be concatenated into a single
+### file up to but not exceeding the threshold given here.  However, each
+### pack file may be much smaller and revprops of a single revision may be
+### much larger than the limit set here.  The threshold will be applied
+### before optional compression takes place.
+### Large values will reduce disk space usage at the expense of increased
+### latency and CPU usage reading and changing individual revprops.
+### Values smaller than 4 kByte will not improve latency any further and 
+### quickly render revprop packing ineffective.
+### revprop-pack-size is 4 kBytes by default for non-compressed revprop
+### pack files and 16 kBytes when compression has been enabled.
+# revprop-pack-size = 4
+###
+### To save disk space, packed revprop files may be compressed.  Standard
+### revprops tend to allow for very effective compression.  Reading and
+### even more so writing, become significantly more CPU intensive.
+### Compressing packed revprops is disabled by default.
+# compress-packed-revprops = false
+
+[io]
+### Parameters in this section control the data access granularity in
+### format 7 repositories and later.  The defaults should translate into
+### decent performance over a wide range of setups.
+###
+### When a specific piece of information needs to be read from disk,  a
+### data block is being read at once and its contents are being cached.
+### If the repository is being stored on a RAID, the block size should be
+### either 50% or 100% of RAID block size / granularity.  Also, your file
+### system blocks/clusters should be properly aligned and sized.  In that
+### setup, each access will hit only one disk (minimizes I/O load) but
+### uses all the data provided by the disk in a single access.
+### For SSD-based storage systems, slightly lower values around 16 kB
+### may improve latency while still maximizing throughput.  If block-read
+### has not been enabled, this will be 
